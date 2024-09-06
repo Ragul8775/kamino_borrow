@@ -7,12 +7,20 @@ skip-lint = false
 [programs.localnet]
 kamino_borrow = "3DSox9PrsL3PTJDuNq5p4kCr9TkfVFN8dAhMffJ6DiBr"
 
+
+[programs.devnet]
+kamino_borrow = "3DSox9PrsL3PTJDuNq5p4kCr9TkfVFN8dAhMffJ6DiBr"
+
 [registry]
-url = "https://api.apr.dev"
+url = "https://api.devnet.solana.com"
 
 [provider]
-cluster = "Localnet"
+cluster = "Devnet"
 wallet = "~/.config/solana/id.json"
+
+[test]
+startup_wait = 20000
+
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
