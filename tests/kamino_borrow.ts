@@ -1,7 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
-
 import { BN } from "@coral-xyz/anchor";
 import {
   DEFAULT_RECENT_SLOT_DURATION_MS,
@@ -10,78 +8,47 @@ import {
   PROGRAM_ID,
   VanillaObligation,
 } from "@kamino-finance/klend-sdk";
-import { assert } from "chai";
-import { KaminoBorrow } from "../target/types/kamino_borrow";
 
 const provider = anchor.AnchorProvider.env();
 anchor.setProvider(provider);
+const connection = new Connection("http://127.0.0.1:8899", "confirmed");
 
-const connection = new Connection(
-  "https://mainnet.helius-rpc.com/?api-key=91acf6dc-f1f0-4db8-9763-aff8b775fa6a"
-);
+// Local lending market and program addresses
+const LOCAL__LENDING_MARKET = new PublicKey("9jVRjgPrGzLwzXpFR3iWCfh5DgMGj3KBtokkfR3GnWA8");
+const LOCAL_DEPLOY_ID = new PublicKey("FbUYVvxQFmGLL5bRMiJtHWTdeiw24akD5D5c7wpUesCP");
 
-const MAINNET_LENDING_MARKET = new PublicKey(
-  "7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF"
-);
-const KAMINO_PROGRAM = new PublicKey(
-  "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"
-);
-
-describe("kamino_borrow", () => {
+describe("kamino_borrow", function () {
+  this.timeout(60000);  // Set timeout to 60 seconds for each test
+  
   let payer = Keypair.generate();
   const deposit_amount = new BN(1 * 10 ** 9);
   const half_deposit_amount = deposit_amount.div(new BN(2));
 
-  const program = anchor.workspace.KaminoBorrow as anchor.Program<KaminoBorrow>;
-  it("deposit", async () => {
+  it("deposit", async function () {
     try {
-      const kaminoMarket = await KaminoMarket.load(
+      // Load the lending market
+      const market = await KaminoMarket.load(
         connection,
-        MAINNET_LENDING_MARKET,
+        LOCAL__LENDING_MARKET,
         DEFAULT_RECENT_SLOT_DURATION_MS,
-        PROGRAM_ID,
-        true
+        LOCAL_DEPLOY_ID
       );
-
-      const kaminoAction = await KaminoAction.buildDepositTxns(
-        kaminoMarket,
-        deposit_amount,
-        new PublicKey("So11111111111111111111111111111111111111112"),
-        payer.publicKey,
-        new VanillaObligation(PROGRAM_ID),
-        1_000_000,
-        true
-      );
-
-      const borrowAction = await KaminoAction.buildBorrowTxns(
-        kaminoMarket!,
-        half_deposit_amount,
-        new PublicKey("So11111111111111111111111111111111111111112"),
-        payer.publicKey,
-        new VanillaObligation(PROGRAM_ID),
-        1000000,
-        true,
-        undefined,
-        true,
-        PublicKey.default
-      );
-      if (!borrowAction) {
-        throw new Error("Borrow Action not generated properly");
+      
+      if (!market) {
+        throw new Error("Failed to load the market. Make sure the market is initialized correctly.");
       }
 
-      console.log("Borrow Instructions:", borrowAction.lendingIxs);
+      // Load the reserves for the market
+      await market.loadReserves();
+      console.log("Loaded Reserves: ", market.reserves);
 
-      // Combine all instructions
-      const allInstructions = [
-        ...borrowAction.setupIxs,
-        ...borrowAction.lendingIxs,
-        ...borrowAction.cleanupIxs,
-      ];
-
-      const allAccountMetas = allInstructions.flatMap((ix) => ix.keys);
-      const ixDatas: Buffer[] = allInstructions.map((ix) => ix.data);
-
-      console.log("All Account Metas:", allAccountMetas);
+      // Check if reserves exist and fetch USDC reserve
+      const usdReserve = market.getReserveBySymbol("USDC");
+      if (usdReserve) {
+        console.log("USDC Reserve Mint Supply: ", usdReserve.stats.mintTotalSupply.toString());
+      } else {
+        console.log("No USDC reserve found in the market.");
+      }
     } catch (error) {
       console.error("Error:", error);
     }

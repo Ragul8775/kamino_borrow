@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::instruction::Instruction;
 
-declare_id!("3DSox9PrsL3PTJDuNq5p4kCr9TkfVFN8dAhMffJ6DiBr");
+declare_id!("58EdXiV3Bp6TktweiVF2KRyfqz9UTXjM7EUXVxuFJfmp");
 
 #[program]
 pub mod kamino_borrow {
