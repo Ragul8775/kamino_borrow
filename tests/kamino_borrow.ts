@@ -18,7 +18,7 @@ const LOCAL__LENDING_MARKET = new PublicKey("9jVRjgPrGzLwzXpFR3iWCfh5DgMGj3KBtok
 const LOCAL_DEPLOY_ID = new PublicKey("FbUYVvxQFmGLL5bRMiJtHWTdeiw24akD5D5c7wpUesCP");
 
 describe("kamino_borrow", function () {
-  this.timeout(60000);  // Set timeout to 60 seconds for each test
+  this.timeout(60000);  
   
   let payer = Keypair.generate();
   const deposit_amount = new BN(1 * 10 ** 9);

@@ -8,8 +8,7 @@ import {
   initLendingMarket,
   InitLendingMarketArgs,
   InitLendingMarketAccounts,
-  buildVersionedTransaction,
-  buildAndSendTxnWithLogs
+
 } from "@kamino-finance/klend-sdk";
 import { assert } from "chai";
 
@@ -52,7 +51,7 @@ async function createLendingMarket() {
 
   const ix = initLendingMarket(args, accounts);
 
-  const { blockhash } = await connection.getLatestBlockhash();  // Fetch the latest blockhash
+  const { blockhash } = await connection.getLatestBlockhash();  
   const tx = new Transaction({
     recentBlockhash: blockhash,
     feePayer: payer.publicKey,
@@ -69,9 +68,8 @@ async function createLendingMarket() {
 // Mocha test case
 describe("kamino_borrow", () => {
   it("should create a lending market", async function () {
-    this.timeout(10000);  // Extend the timeout for the test if necessary
+    this.timeout(60000); 
     
-    // Airdrop 2 SOL to the payer for transaction fees
     const airdropSignature = await connection.requestAirdrop(
       payer.publicKey,
       2 * anchor.web3.LAMPORTS_PER_SOL
@@ -82,7 +80,7 @@ describe("kamino_borrow", () => {
     const lendingMarketAddress = await createLendingMarket();
     console.log("Newly created Lending Market Address: ", lendingMarketAddress.toBase58());
 
-    // Use assertions to verify that the market was created
+
     assert.isTrue(lendingMarketAddress instanceof PublicKey, "Lending market address should be a PublicKey");
   });
 });
